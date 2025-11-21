@@ -1,17 +1,30 @@
 """
 CryptoQuant BTC Open Interest and Price Data Scraper
 Extracts data from CryptoQuant charts using Selenium
+Supports both Google Colab and local environments
 """
 
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.chrome.options import Options
 import time
 import json
 import pandas as pd
 from datetime import datetime
+
+# Try to detect Colab environment and import appropriate selenium
+try:
+    import google.colab
+    IN_COLAB = True
+    import google_colab_selenium as gs
+    print("✅ Google Colab 환경 감지 - google-colab-selenium 사용")
+except ImportError:
+    IN_COLAB = False
+    from selenium import webdriver
+    from selenium.webdriver.chrome.options import Options
+    print("✅ 로컬 환경 감지 - 일반 selenium 사용")
+
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.options import Options
 
 
 class CryptoQuantScraper:
@@ -20,20 +33,29 @@ class CryptoQuantScraper:
         Initialize the scraper with Chrome options
 
         Args:
-            headless (bool): Run browser in headless mode
+            headless (bool): Run browser in headless mode (Colab에서는 무시됨)
         """
         self.chrome_options = Options()
-        if headless:
+        if headless and not IN_COLAB:
             self.chrome_options.add_argument('--headless')
         self.chrome_options.add_argument('--no-sandbox')
         self.chrome_options.add_argument('--disable-dev-shm-usage')
         self.chrome_options.add_argument('--disable-gpu')
         self.chrome_options.add_argument('--window-size=1920,1080')
+        self.chrome_options.add_argument('--disable-infobars')
         self.driver = None
+        self.is_colab = IN_COLAB
 
     def start_driver(self):
         """Start the Chrome WebDriver"""
-        self.driver = webdriver.Chrome(options=self.chrome_options)
+        if self.is_colab:
+            # Google Colab 환경
+            print("Google Colab에서 Chrome 드라이버 시작...")
+            self.driver = gs.Chrome(options=self.chrome_options)
+        else:
+            # 로컬 환경
+            print("로컬 환경에서 Chrome 드라이버 시작...")
+            self.driver = webdriver.Chrome(options=self.chrome_options)
 
     def extract_highcharts_data(self, url):
         """
@@ -51,9 +73,10 @@ class CryptoQuantScraper:
         print(f"Loading URL: {url}")
         self.driver.get(url)
 
-        # Wait for chart to load
-        print("Waiting for chart to load...")
-        time.sleep(5)
+        # Wait for chart to load (longer wait for Colab)
+        wait_time = 8 if self.is_colab else 5
+        print(f"Waiting for chart to load ({wait_time} seconds)...")
+        time.sleep(wait_time)
 
         # Extract Highcharts data from JavaScript
         script = """

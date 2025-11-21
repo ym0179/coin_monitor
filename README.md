@@ -17,7 +17,7 @@ CryptoQuant에서 BTC 가격과 미결제 약정(Open Interest) 데이터를 추
 
 ## 빠른 시작 (Google Colab - 추천)
 
-### 방법 1: Colab 노트북 사용 (가장 쉬움)
+### 방법 1: Colab 노트북 사용 (가장 쉬움) ⭐
 
 1. Google Colab에서 `CryptoQuant_Data_Extractor.ipynb` 파일을 열기
 2. 셀을 순서대로 실행
@@ -25,36 +25,38 @@ CryptoQuant에서 BTC 가격과 미결제 약정(Open Interest) 데이터를 추
 
 **Colab에서 직접 실행:**
 
-```python
-# 1. GitHub에서 노트북 다운로드 (또는 직접 업로드)
-!wget https://raw.githubusercontent.com/your-repo/coin_monitor/main/CryptoQuant_Data_Extractor.ipynb
-
-# 2. Colab에서 노트북을 열고 실행
-```
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ym0179/coin_monitor/blob/claude/fix-highcharts-tooltip-01H4VypGM6KYkxLkzdAgoasy/CryptoQuant_Data_Extractor.ipynb)
 
 ### 방법 2: Colab에서 Python 스크립트 직접 실행
 
 ```python
 # Colab 노트북의 새 셀에서 실행
 
-# 1. 필요한 패키지 설치
-!pip install selenium pandas webdriver-manager -q
+# 1. 필요한 패키지 설치 (google-colab-selenium 사용)
+!pip install -q google-colab-selenium pandas beautifulsoup4
 
-# 2. Chrome 설정
-!apt-get update
-!apt install -y chromium-chromedriver
-!cp /usr/lib/chromium-browser/chromedriver /usr/bin
-import sys
-sys.path.insert(0,'/usr/lib/chromium-browser/chromedriver')
+# 2. 스크립트 다운로드
+!wget -q https://raw.githubusercontent.com/ym0179/coin_monitor/claude/fix-highcharts-tooltip-01H4VypGM6KYkxLkzdAgoasy/cryptoquant_scraper.py
 
-# 3. 스크립트 다운로드 및 실행
-!wget https://raw.githubusercontent.com/your-repo/coin_monitor/main/cryptoquant_scraper.py
-!python cryptoquant_scraper.py
-
-# 4. 결과 확인
+# 3. 데이터 추출
+from cryptoquant_scraper import CryptoQuantScraper
 import pandas as pd
-df = pd.read_csv('cryptoquant_data.csv')
-print(df.head())
+from google.colab import files
+
+url = "https://cryptoquant.com/asset/btc/chart/derivatives/open-interest?exchange=all_exchange&symbol=all_symbol&window=DAY"
+
+scraper = CryptoQuantScraper(headless=True)
+try:
+    df = scraper.extract_highcharts_data(url)
+    if df is not None:
+        print(f"✅ {len(df)}개의 데이터 추출 완료!")
+        print(df.tail())
+
+        # CSV 저장 및 다운로드
+        df.to_csv('btc_data.csv', index=False)
+        files.download('btc_data.csv')
+finally:
+    scraper.close()
 ```
 
 ## 로컬 환경에서 실행
@@ -159,15 +161,17 @@ plt.show()
 
 ## 문제 해결
 
-### Chrome 드라이버 오류
+### Chrome 드라이버 오류 (해결됨!)
 
-Colab에서 Chrome 드라이버 오류가 발생하면:
+**이제 `google-colab-selenium`을 사용하므로 Chrome 드라이버 수동 설치가 필요 없습니다!**
+
+단순히 다음 명령어만 실행하세요:
 
 ```bash
-!apt-get update
-!apt install -y chromium-chromedriver
-!cp /usr/lib/chromium-browser/chromedriver /usr/bin
+!pip install -q google-colab-selenium
 ```
+
+스크래퍼가 자동으로 Colab 환경을 감지하고 올바른 드라이버를 사용합니다.
 
 ### 데이터를 찾을 수 없음
 
