@@ -32,6 +32,7 @@ env/
 
 # CSV Data Files
 *.csv
+!example_data.csv
 *.xlsx
 *.xls
 

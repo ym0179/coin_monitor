@@ -161,6 +161,45 @@ plt.show()
 
 ## 문제 해결
 
+### 데이터 추출이 안 될 때 ⚠️
+
+자동 스크래핑이 작동하지 않나요? **걱정하지 마세요!** 여러 해결 방법이 있습니다:
+
+#### 1. 먼저 테스트 스크립트 실행
+
+```bash
+python test_extractor.py
+```
+
+이 스크립트가 어디서 문제가 발생하는지 알려줍니다.
+
+#### 2. 수동 추출 방법 (100% 확실!) ⭐
+
+브라우저에서 직접 데이터를 추출할 수 있습니다:
+
+1. CryptoQuant 페이지를 브라우저에서 열기
+2. F12를 눌러 개발자 도구 열기
+3. Console 탭에서 [MANUAL_EXTRACTION.md](MANUAL_EXTRACTION.md)의 JavaScript 코드 실행
+4. CSV 파일이 자동으로 다운로드됩니다!
+
+**자세한 방법**: [MANUAL_EXTRACTION.md](MANUAL_EXTRACTION.md) 참고
+
+#### 3. 대기 시간 늘리기
+
+`cryptoquant_scraper.py`에서 대기 시간을 늘려보세요:
+
+```python
+wait_time = 20  # 10초에서 20초로 증가
+```
+
+#### 4. 헤드리스 모드 끄기 (디버깅용)
+
+```python
+scraper = CryptoQuantScraper(headless=False)
+```
+
+브라우저 창이 열려서 무슨 일이 일어나는지 볼 수 있습니다.
+
 ### Chrome 드라이버 오류 (해결됨!)
 
 **이제 `google-colab-selenium`을 사용하므로 Chrome 드라이버 수동 설치가 필요 없습니다!**
